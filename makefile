@@ -7,43 +7,34 @@
 
 clean : 
 	rm -f *.aux *.log *.bbl *.blg
-	rm -f x1.png x2.png x3.png x4.png x5.png x6.png x7.png x8.png x9.png x10.png 
-	rm -f ri-rates-notes.xml ri-rates-notes.pdf ri-rates-notes.html
+	rm -f ri-rates-notes.xml ri-rates-notes.pdf 
 	rm -f LaTeXML.cache
 
-PDFFIGS = $(wildcard fig/*.pdf)
-SVGFIGS = $(patsubst %.pdf,%.svg,$(PDFFIGS))
-TEXFILES = ri-rates-notes.tex intro.tex methods.tex results.tex demographic-model-appendix.tex 
-BIBFILES = 
+%.tex : clean
+	git show master:$@ > $@
 
 gh-pages : ri-rates-notes.xhtml
 	git show master:ri-rates-notes.tex > ri-rates-notes.tex
 	rm ri-rates-notes.xhtml
 	make ri-rates-notes.xhtml
 
-ri-rates-notes.html : $(TEXFILES) $(SVGFIGS) $(BIBFILES)
+%.html : %.tex
 	rm -f LaTeXML.cache
-	latexmlc --format=html5 --javascript=LaTeXML-maybeMathjax.js --css=plr-style.css --stylesheet=xsl/LaTeXML-all-xhtml.xsl --javascript=adjust-svg.js --destination=$@ ri-rates-notes.tex
-
-ri-rates-notes.xhtml : $(TEXFILES) $(SVGFIGS) $(BIBFILES)
-	rm -f LaTeXML.cache
-	latexml --destination=ri-rates-notes.xml $<
-	latexmlpost --css=plr-style.css --javascript=LaTeXML-maybeMathjax.js --javascript=adjust-svg.js --stylesheet=xsl/LaTeXML-all-xhtml.xsl --destination=$@ ri-rates-notes.xml
-
-%.xml : %.tex
-	latexml --destination=$@ $<
+	latexmlc --format=html5 --javascript=LaTeXML-maybeMathjax.js --css=plr-style.css --stylesheet=xsl/LaTeXML-all-xhtml.xsl --javascript=adjust-svg.js --destination=$@ $<
 
 %.xhtml : %.xml
 	latexmlpost --css=plr-style.css --javascript=LaTeXML-maybeMathjax.js --javascript=adjust-svg.js --stylesheet=xsl/LaTeXML-all-xhtml.xsl --destination=$@ $<
-	-cp plr-style.css $(@D)
-	-cp adjust-svg.js $(@D)
 
-ri-rates-notes.pdf : $(TEXFILES) $(PDFFIGS) $(BIBFILES)
-	rm -f ri-rates-notes.aux
+%.xml : %.tex
+	rm -f LaTeXML.cache
+	latexml --destination=$@ $<
+
+%.pdf : %.tex
+	rm -f $(patsubst %.tex,%.aux,$<)
 	# pdflatex ri-rates-notes.tex
 	# bibtex ri-rates-notes.aux
-	pdflatex ri-rates-notes.tex
-	pdflatex ri-rates-notes.tex
+	pdflatex $<
+	pdflatex $<
 
 %.svg : %.pdf
 	inkscape $< --export-plain-svg=$@
