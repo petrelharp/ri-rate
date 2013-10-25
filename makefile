@@ -1,9 +1,9 @@
 .PHONY : clean gh-pages
 
+.SECONDARY : ri-rates-notes.xhtml ri-rates-notes.html
+
 ## TO-DO:
-# rejigger things so that the gh-pages branch does not have the primary files in
-# i.e. the first step in make gh-pages is to checkout the relevant files from the master branch
-# ideally parsing the .tex files to figure out what the prerequisites are (does latexml do this?)
+# automatically figure out which things to tex up
 
 clean : 
 	rm -f *.aux *.log *.bbl *.blg
@@ -13,10 +13,11 @@ clean :
 %.tex : clean
 	git show master:$@ > $@
 
-gh-pages : ri-rates-notes.xhtml
-	git show master:ri-rates-notes.tex > ri-rates-notes.tex
-	rm ri-rates-notes.xhtml
-	make ri-rates-notes.xhtml
+gh-pages : ri-rates-notes.xhtml ri-rates-notes.html
+	echo "making all the pages"
+	# git show master:ri-rates-notes.tex > ri-rates-notes.tex
+	# rm ri-rates-notes.xhtml
+	# make ri-rates-notes.xhtml
 
 %.html : %.tex
 	rm -f LaTeXML.cache
@@ -28,13 +29,6 @@ gh-pages : ri-rates-notes.xhtml
 %.xml : %.tex
 	rm -f LaTeXML.cache
 	latexml --destination=$@ $<
-
-%.pdf : %.tex
-	rm -f $(patsubst %.tex,%.aux,$<)
-	# pdflatex ri-rates-notes.tex
-	# bibtex ri-rates-notes.aux
-	pdflatex $<
-	pdflatex $<
 
 %.svg : %.pdf
 	inkscape $< --export-plain-svg=$@
