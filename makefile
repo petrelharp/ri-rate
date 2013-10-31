@@ -18,6 +18,8 @@ gh-pages : ri-rates-notes.xhtml ri-rates-notes.html
 	# git show master:ri-rates-notes.tex > ri-rates-notes.tex
 	# rm ri-rates-notes.xhtml
 	# make ri-rates-notes.xhtml
+	git add ri-rates-notes.xhtml ri-rates-notes.html
+	git commit -m "updated html"
 
 %.html : %.tex
 	rm -f LaTeXML.cache
